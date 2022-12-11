@@ -1,13 +1,11 @@
 
-#include <ESP8266WebServer.h>
-#include <ESP8266mDNS.h>
-#include <ESP8266HTTPUpdateServer.h>
 #include <ArduinoJson.h>
 #include <ArduinoHttpClient.h>
 #include <PubSubClient.h>
 #include <DHT.h>
 #include <Adafruit_BMP280.h>
 #include <ESP8266WiFi.h>
+#include "http_server.hpp"
 
 #define BAUDE_RATE 9600
 
@@ -34,22 +32,12 @@
 // endereço do thingsboard
 char thingsboardServer[] = "10.5.39.18"; 
 
-// nome do host para acesso e atualizacao via OTA. http://<HOST>.local/update
-const char* host = "thg002"; 
-// const char* update_path = "/firmware";
-// const char* update_username = "admin";
-// const char* update_password = "admin";
-
 //pinos e modelo DHT
 #define DHTPIN 0 // PIN0 - PIN2 - PIN16
 #define DHTTYPE DHT22
 
 WiFiClient wifiClient; //objeto para conexao ao thingsboard
 WiFiClient nodeClient; //objeto para conexao ao node-red
-
-//objetos para pagina de acesso OTA
-ESP8266WebServer httpServer(80);
-ESP8266HTTPUpdateServer httpUpdater;
 
 // objeto para iniciar DHT sensor.
 DHT dht(DHTPIN, DHTTYPE);
@@ -79,12 +67,8 @@ void setup()
     mqtt_node.setCallback(callback); // cadastro de tópicos para checagem. Ver funcao callback
     lastSend = 0;  
 
-    MDNS.begin(host);
-    httpUpdater.setup(&httpServer);
-    //httpUpdater.setup(&httpServer, update_path, update_username, update_password);
-    httpServer.begin();
-    MDNS.addService("http", "tcp", 80);
-    Serial.printf("HTTP Update Server ready! Open http://%s.local/update in your browser\n", host);    
+    HTTPSERVER::configurarHttpServer();
+    
 }
 
 void loop()
@@ -101,9 +85,7 @@ void loop()
     client.loop(); // conexao do thingsboard
     mqtt_node.loop(); // conexao ao node-red
 
-    // configura página webserver para atualização OTA
-    httpServer.handleClient();
-    MDNS.update();
+    HTTPSERVER::checarHttpServer();
 }
 
 
