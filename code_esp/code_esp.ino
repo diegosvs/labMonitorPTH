@@ -2,11 +2,9 @@
 #include <ArduinoJson.h>
 #include <ArduinoHttpClient.h>
 #include <PubSubClient.h>
-// #include <DHT.h>
-// #include <Adafruit_BMP280.h>
-#include <ESP8266WiFi.h>
 #include "http_server.hpp"
 #include "dht_bme_config.hpp"
+#include "wifi_config.hpp"
 
 #define BAUDE_RATE 9600
 
@@ -26,31 +24,16 @@
 #define TOPICO_SUBS_TB "datatago"
 #define TOPICO_SUBS_LED "LEDPLACA"
 
-//conexao à rede wifi
-#define WIFI_AP "IPT-IoT"
-#define WIFI_PASSWORD "r@cion@l"
-
 // endereço do thingsboard
 char thingsboardServer[] = "10.5.39.18"; 
 
-// //pinos e modelo DHT
-// #define DHTPIN 0 // PIN0 - PIN2 - PIN16
-// #define DHTTYPE DHT22
-
 WiFiClient wifiClient; //objeto para conexao ao thingsboard
 WiFiClient nodeClient; //objeto para conexao ao node-red
-
-// // objeto para iniciar DHT sensor.
-// DHT dht(DHTPIN, DHTTYPE);
-
-//objeto para iniciar BMP280 ---> I2C PIN 5 - SCL / PIN4 - SDA
-// Adafruit_BMP280 bmp; // sensor bmp conecta pela i2c
 
 //Objetos para conexao ao Thingsboard e Node-red
 PubSubClient client(wifiClient);
 PubSubClient mqtt_node(nodeClient);
 
-int status = WL_IDLE_STATUS;
 unsigned long lastSend;
 bool ledteste = false;
 
@@ -60,15 +43,12 @@ void setup()
     pinMode(BUILTIN_LED, OUTPUT); 
     digitalWrite(LED_BUILTIN, 0);     
     PTH::iniciarSensores();
-    // dht.begin();
-    //bmp.begin(0x76); // caso de uso com sensor de pressão
-    delay(10);
-    InitWiFi();   
+    WIFICONFIG::conectarWifi();
+    
     client.setServer(thingsboardServer, 1883);
     mqtt_node.setServer(MQTT_ENDERECO_IP , MQTT_PORT);
     mqtt_node.setCallback(callback); // cadastro de tópicos para checagem. Ver funcao callback
     lastSend = 0;  
-
     HTTPSERVER::configurarHttpServer();
     
 }
@@ -93,45 +73,10 @@ void loop()
 
 void getAndSendTemperatureAndHumidityData() //função para envio de dados ao Thingsboard
 { 
-    // float h = dht.readHumidity();
-    // delay(20);
+   String payload = PTH::formatarPayloadTemperaturaUmidade();
 
-    // float t = dht.readTemperature();
-    // delay(20);
-
-    // float p = bmp.readPressure();
-    
-    // Check if any reads failed and exit early (to try again).
-    // if (isnan(h) || isnan(t) )
-    // {
-    //     Serial.println("Failed to read from DHT sensor!");
-    //     return;
-    // }
-
-    // String temperature = String(t);
-    // String humidity = String(h);
-    // String pressure = String(p);
-
-    //Prepare a JSON payload string
-    String payload = "{";
-    payload += "\"temperatura\":";
-    payload += PTH::aquisitarTemperatura();
-    payload += ",";
-    payload += "\"umidade\":";
-    payload += PTH::aquisitarUmidade();
-    payload += "}";
-
-    // String payload = "{";
-    // payload += "\"temperatura\":";
-    // payload += temperature;
-    // payload += ",";
-    // payload += "\"umidade\":";
-    // payload += humidity;
-    // payload += ",";
-    // payload += "\"pressão\":";
-    // payload += pressure;
-    // payload += "}";
-
+   //String payload = PTH::formatarPayloadTemperaturaUmidadePressao();
+ 
     // Send payload
     char attributes[100];
     payload.toCharArray(attributes, 100);
@@ -153,38 +98,13 @@ void send_data_nodered(void)
   // //  mqtt_node.publish(TOPICO_PUB_PRESSAO, String(pressao).c_str(), true);
   }
 
-void InitWiFi()
-{
-    Serial.println("Connecting to AP ...");
-    // attempt to connect to WiFi network
-
-    WiFi.begin(WIFI_AP, WIFI_PASSWORD);
-    while (WiFi.status() != WL_CONNECTED)
-    {
-        //digitalWrite(LED_BUILTIN, LOW);
-        delay(100);
-    }
-    Serial.println("Connected to AP");
-}
 
 void reconnect()
 {
     // Loop until we're reconnected
     while ((!client.connected())||(!mqtt_node.connected()))
     {
-        status = WiFi.status();
-        if (status != WL_CONNECTED)
-        {
-            WiFi.begin(WIFI_AP, WIFI_PASSWORD);
-            while (WiFi.status() != WL_CONNECTED)
-            {
-                //digitalWrite(LED_BUILTIN, LOW);
-                delay(100);
-                
-                Serial.print(".");
-            }
-            Serial.println("Connected to AP");
-        }
+       WIFICONFIG::conectarWifi();
 
         Serial.print("Connecting to Thingsboard node ...");
         // Attempt to connect (clientId, username, password)

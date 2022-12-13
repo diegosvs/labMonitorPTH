@@ -1,5 +1,6 @@
 #include <DHT.h>
 #include <Adafruit_BMP280.h>
+#include <ArduinoJson.h>
 
 namespace PTH
 {
@@ -7,13 +8,65 @@ namespace PTH
 #define DHTPIN 0 // PIN0 - PIN2 - PIN16
 #define DHTTYPE DHT22
 
+String aquisitarUmidade();
+String aquisitarTemperatura();
+String aquisitarPressao();
+
     // objeto para iniciar DHT sensor.
     DHT dht(DHTPIN, DHTTYPE);
 
     //    objeto para iniciar BMP280 ---> I2C PIN 5 - SCL / PIN4 - SDA
     Adafruit_BMP280 bmp; // sensor bmp conecta pela i2c
 
-        String aquisitarTemperatura()
+    String formatarPayloadTemperaturaUmidade()
+    {
+        String payload = "{";
+        payload += "\"temperatura\":";
+        payload += aquisitarTemperatura();
+        payload += ",";
+        payload += "\"umidade\":";
+        payload += aquisitarUmidade();
+        payload += "}";
+
+        // String payload = "{";
+        // payload += "\"temperatura\":";
+        // payload += temperature;
+        // payload += ",";
+        // payload += "\"umidade\":";
+        // payload += humidity;
+        // payload += ",";
+        // payload += "\"pressão\":";
+        // payload += pressure;
+        // payload += "}";
+
+        return payload;
+    }
+
+    String formatarPayloadTemperaturaUmidadePressao()
+    {
+        // String payload = "{";
+        // payload += "\"temperatura\":";
+        // payload += aquisitarTemperatura();
+        // payload += ",";
+        // payload += "\"umidade\":";
+        // payload += aquisitarUmidade();
+        // payload += "}";
+
+        String payload = "{";
+        payload += "\"temperatura\":";
+        payload += aquisitarTemperatura();
+        payload += ",";
+        payload += "\"umidade\":";
+        payload += aquisitarUmidade();
+        payload += ",";
+        payload += "\"pressão\":";
+        payload += aquisitarPressao();
+        payload += "}";
+
+        return payload;
+    }
+
+    String aquisitarTemperatura()
     {
         float t = dht.readTemperature();
         String temperature = String(t);
