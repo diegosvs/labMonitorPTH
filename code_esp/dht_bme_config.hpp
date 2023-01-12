@@ -5,17 +5,17 @@
 namespace PTH
 {
     // pinos e modelo DHT
-#define DHTPIN 0 // PIN0 - PIN2 - PIN16
+#define DHTPIN 0 // PIN0 - D3
 #define DHTTYPE DHT22
 
-String aquisitarUmidade();
-String aquisitarTemperatura();
-String aquisitarPressao();
+    String aquisitarUmidade();
+    String aquisitarTemperatura();
+    String aquisitarPressao();
 
     // objeto para iniciar DHT sensor.
     DHT dht(DHTPIN, DHTTYPE);
 
-    //    objeto para iniciar BMP280 ---> I2C PIN 5 - SCL / PIN4 - SDA
+    //    objeto para iniciar BMP280 ---> I2C PIN 5 D1 - SCL / PIN4 D2 - SDA
     Adafruit_BMP280 bmp; // sensor bmp conecta pela i2c
 
     String formatarPayloadTemperaturaUmidade()
