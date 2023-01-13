@@ -9,12 +9,12 @@
 
 #define BAUDE_RATE 9600
 
-#define TOKEN "lmmthg003" // senha do dispositivo cadastrado no thingsboard
+#define TOKEN "lmmthg001" // senha do dispositivo cadastrado no thingsboard
 
 // credenciais ao broker no node-red
 #define MQTT_USERNAME ""              // nome do dispositivo cadastrado
 #define MQTT_PASSWORD ""              // se houver senha cadastrada no broker
-#define MQTT_PORT 8883                // porta especifica para comunicacao
+#define MQTT_PORT 1881                // porta especifica para comunicacao
 #define MQTT_ENDERECO_IP "10.5.39.18" // endereco de ip onde estiver rodando o node-red
 
 // tópicos necessários para envio de dados via mqtt
@@ -82,9 +82,9 @@ void loop()
 
 void getAndSendTemperatureAndHumidityData() // função para envio de dados ao Thingsboard
 {
-  String payload = PTH::formatarPayloadTemperaturaUmidade();
+  //String payload = PTH::formatarPayloadTemperaturaUmidade();
 
-  //String payload = PTH::formatarPayloadTemperaturaUmidadePressao();
+  String payload = PTH::formatarPayloadTemperaturaUmidadePressao();
 
   // Send payload
   char attributes[100];

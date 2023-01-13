@@ -11,7 +11,7 @@ namespace WIFICONFIG
 #define WIFI_PASSWORD "r@cion@l"
 
 //Static IP address configuration
-IPAddress staticIP(10,56,56,103); //ESP static ip
+IPAddress staticIP(10,56,56,101); //ESP static ip
 IPAddress gateway(10,56,56,1);   //IP Address of your WiFi Router (Gateway)
 IPAddress subnet(255, 255, 255, 0);  //Subnet mask
 //IPAddress dns(10,11,39,5);  //DNS
