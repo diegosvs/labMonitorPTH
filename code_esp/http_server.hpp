@@ -8,7 +8,7 @@ namespace HTTPSERVER
 {
     //curl -u admin:admin -F "image=@firmware.bin" esp8266-webupdate.local/firmware
     // nome do host para acesso e atualizacao via OTA. http://<HOST>.local/update_path
-    const char *host = "thg1";
+    const char *host = "pth5";
     const char *update_path = "/up";
     // const char* update_username = "admin";
     // const char* update_password = "espthg";

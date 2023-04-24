@@ -9,13 +9,14 @@
 
 #define BAUDE_RATE 9600
 
-#define TOKEN "lmmthg001" // senha do dispositivo cadastrado no thingsboard
+//#define TOKEN "lmmthg005" // senha do dispositivo cadastrado no thingsboard
 
 // credenciais ao broker no node-red
+#define MQTT_ID "LMMPTH005"
 #define MQTT_USERNAME ""              // nome do dispositivo cadastrado
 #define MQTT_PASSWORD ""              // se houver senha cadastrada no broker
 #define MQTT_PORT 1881                // porta especifica para comunicacao
-#define MQTT_ENDERECO_IP "10.5.39.18" // endereco de ip onde estiver rodando o node-red
+#define MQTT_ENDERECO_IP "200.18.107.126" // endereco de ip onde estiver rodando o node-red
 
 // tópicos necessários para envio de dados via mqtt
 #define TOPICO_PUB_TEMPERATURA "device/temperatura"
@@ -82,9 +83,9 @@ void loop()
 
 void getAndSendTemperatureAndHumidityData() // função para envio de dados ao Thingsboard
 {
-  //String payload = PTH::formatarPayloadTemperaturaUmidade();
+  String payload = PTH::formatarPayloadTemperaturaUmidade();
 
-  String payload = PTH::formatarPayloadTemperaturaUmidadePressao();
+  //String payload = PTH::formatarPayloadTemperaturaUmidadePressao();
 
   // Send payload
   char attributes[100];
@@ -117,7 +118,7 @@ void reconnect()
    
     Serial.print("Connecting to Thingsboard node ...");
     // Attempt to connect (clientId, username, password)
-    if ((client.connect("ESP8266 Device", TOKEN, NULL)) && (mqtt_node.connect("teste", MQTT_USERNAME, MQTT_PASSWORD)))
+    if ((client.connect(MQTT_ID, MQTT_USERNAME, MQTT_PASSWORD)) && (mqtt_node.connect(MQTT_ID, MQTT_USERNAME, MQTT_PASSWORD)))
     {
       Serial.println("[DONE]");
       digitalWrite(LED_BUILTIN, 1);

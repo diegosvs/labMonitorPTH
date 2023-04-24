@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <title>Document</title>
+    <style>
+        
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: #0c0b5c;
+            font-family: 'Century Gothic', 'Arial Narrow', Arial, sans-serif;
+            margin: 0 auto;
+            max-width: 1000px;
+            text-align: center;
+            color: white;
+            width: 100%;
+            height: 100%;
+        }
+
+        .card {
+            background: white;
+            max-width: 400px;
+            padding: 30px;
+            border-radius: 20px;
+            margin: 100px auto 10px auto;
+            color: black;
+            text-align: left;
+            position: relative;
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            box-shadow: 0 0 10px #00000030;
+        }
+
+        .campo { 
+            position: relative;
+            flex: calc(50% - 10px);
+            display: flex;
+            margin: 5px;
+        }
+
+        input {
+            width: calc(100% - 20px);
+            padding: 30px 10px 10px 10px;
+            border-radius: 4px;
+            border: thin solid black;
+            outline: none;
+        }
+
+        label {
+            position: absolute;
+            top: 8px;
+            left: 10px;
+            pointer-events: none;
+            color: #888;
+        }
+
+        button {
+            border-radius: 4px;
+            width: calc(100%);
+            border: none;
+            background: #2f2d9e;
+            color: white;
+            padding: 10px;
+        }
+
+        .loading {
+            background: linear-gradient(90deg, #2f2d9e, #2f2d9e, #9d9bfd, #2f2d9e, #2f2d9e);
+            background-size: 400% 400%;
+            animation: lg 2s ease infinite;
+        }
+
+        @keyframes lg {
+            0%{background-position:100% 100%}
+            100%{background-position:0% 0%}
+        }
+
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="campo">
+            <label>Login</label>
+            <input id="login" type="text" value="" autocomplete="off" />
+        </div>
+        <div class="campo">
+            <label>Senha</label>
+            <input id="senha" type="password" value="" />
+        </div>
+        <div class="campo">
+            <label>DeviceID</label>
+            <input id="deviceId" type="text" value="" />
+        </div>
+        <div class="campo">
+            <label>Keys</label>
+            <input id="keys" type="text" value="" />
+        </div>
+        <div class="campo">
+            <label>Tempo inicial</label>
+            <input id="tempoInicial" type="datetime" value="" />
+        </div>
+        <div class="campo">
+            <label>Tempo final</label>
+            <input id="tempofinal" type="datetime" value="" />
+        </div>
+        <div class="campo">
+            <button id="botao" onclick="enviar()">
+                Baixar
+            </button>
+        </div>
+    </div>
+    
+
+    <script>
+        
+        function enviar() {
+
+            $("#botao").addClass("loading");
+            $("#botao").text("Baixando...");
+
+            var login = $("#login").val();
+            var senha = document.getElementById("senha").value;
+            var deviceId = document.getElementById("deviceId").value;
+            var keys = document.getElementById("keys").value.replace(/ /g,'');
+            var tempoInicial = document.getElementById("tempoInicial").value;
+            var tempofinal = document.getElementById("tempofinal").value;
+
+            var params = {};
+            params["username"] = login;
+            params["password"] = senha;
+
+            var token = "";
+
+            $("html").css("cursor", "progress");
+            $.ajax({
+                url: "http://10.5.39.18:8080/api/auth/login",
+                type: 'post',
+                dataType: 'json',
+                contentType: 'application/json',
+                data: JSON.stringify(params),
+                success: function (result) {
+                    token = result.token;
+                    //console.log(result);
+                    $.ajax({
+                        url: "http://10.5.39.18:8080/api/plugins/telemetry/DEVICE/" + deviceId 
+                        + "/values/timeseries?keys=" + keys 
+                        + "&startTs=" + tempoInicial
+                        + "&endTs=" + tempofinal
+                        + "&agg=NONE&limit=1000000000",
+                        type: 'get',
+                        dataType: 'json',
+                        contentType: 'application/json',
+                        headers: {
+                            "Content-Type": "application/x-www-form-urlencoded",
+                            "X-Authorization": "Bearer " + token
+                        },
+                        success: function (result) {
+                            //$("#resultado").text(JSON.stringify(result["Temperatura"][0]["ts"]));
+                            //console.log(result);
+                            JSONToCSVConvertor(result, 'Teste', true);
+                        },
+                        error: function (result) {
+                            if(JSON.parse(result.responseText).message != undefined) {
+                                $("#resultado").text(JSON.parse(result.responseText).message);
+                            }
+                            console.log(result);
+                        },
+                        complete: function (result) {
+                            $("html").css("cursor", "auto");
+                            $("#botao").removeClass("loading");
+                            $("#botao").text("Baixar");
+                        }
+                    });
+                },
+                error: function (result) {
+                    $("#resultado").text(JSON.parse(result.responseText));
+                    console.log(result);
+                    $("#botao").removeClass("loading");
+                    $("#botao").text("Baixar");
+                },
+                complete: function (result) {
+                    $("html").css("cursor", "auto");
+                }
+            });
+        }
+
+        function JSONToCSVConvertor(JSONData, ReportTitle, ShowLabel) {
+            //If JSONData is not an object then JSON.parse will parse the JSON string in an Object
+            var arrData = typeof JSONData != 'object' ? JSON.parse(JSONData) : JSONData;
+            var CSV = '';
+            var ks = document.getElementById("keys").value.replace(/ /g,'').split(",");
+            
+            var posicao = 0;
+            var continuar = true;
+            
+            var cabecalho = 'Data e hora;';
+            for (var j = 0; j < ks.length; j++) {
+                cabecalho += ks[j] + ';';
+            }
+
+            while(continuar) {
+                var row = "";
+                for (var j = 0; j < ks.length; j++) {
+                    if (posicao < arrData[ks[j]].length) {
+                        continuar = true;
+                        var data = new Date(arrData[ks[j]][posicao]["ts"]);
+                        if (row.indexOf(data.toLocaleDateString() + " " + data.toLocaleTimeString()) < 0) {
+                            row += '"' + data.toLocaleDateString() + " " + data.toLocaleTimeString() + '";';
+                        }
+                        row += '"' + arrData[ks[j]][posicao]["value"] + '";';
+                    } else {
+                        continuar = false;
+                    }
+                }
+                CSV += row + '\r\n';
+                posicao++;
+            }
+                
+            CSV = cabecalho + '\r\n' + CSV;
+
+            if (CSV == '') {
+                alert("Invalid data");
+                return;
+            }
+
+            var link = document.createElement("a");
+            link.id = "lnkDwnldLnk";
+            document.body.appendChild(link);
+            var csv = CSV;
+            blob = new Blob([csv], { type: 'text/csv' });
+            var csvUrl = window.webkitURL.createObjectURL(blob);
+            var filename =  (ReportTitle || 'UserExport') + '.csv';
+            $("#lnkDwnldLnk")
+                .attr({
+                    'download': filename,
+                    'href': csvUrl
+                });
+
+            $('#lnkDwnldLnk')[0].click();
+            document.body.removeChild(link);
+        }
+    </script>
+</body>
+</html>
