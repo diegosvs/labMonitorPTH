@@ -12,7 +12,7 @@
 //#define TOKEN "lmmthg005" // senha do dispositivo cadastrado no thingsboard
 
 // credenciais ao broker no node-red
-#define MQTT_ID "LMMPTH005"
+#define MQTT_ID "LMMPTH009"
 #define MQTT_USERNAME ""              // nome do dispositivo cadastrado
 #define MQTT_PASSWORD ""              // se houver senha cadastrada no broker
 #define MQTT_PORT 1881                // porta especifica para comunicacao

@@ -7,17 +7,20 @@ namespace WIFICONFIG
 {
 
     // conexao à rede wifi
-#define WIFI_AP "IPT-WiFi"
+// #define WIFI_AP "IPT-IoT"
+// #define WIFI_PASSWORD "r@cion@l"
+
+#define WIFI_AP "IPT-WiFi-Novo"
 #define WIFI_PASSWORD "donouss@"
 
 // //Static IP address configuration
-// IPAddress staticIP(10,56,56,110); //ESP static ip
+// IPAddress staticIP(10,56,56,112); //ESP static ip
 // IPAddress gateway(10,56,56,1);   //IP Address of your WiFi Router (Gateway)
 // IPAddress subnet(255, 255, 255, 0);  //Subnet mask
 // //IPAddress dns(10,11,39,5);  //DNS
 
 //Static IP address configuration
-IPAddress staticIP(200,18,107,105); //ESP static ip
+IPAddress staticIP(200,18,107,109); //ESP static ip
 IPAddress gateway(200,18,107,1);   //IP Address of your WiFi Router (Gateway)
 IPAddress subnet(255, 255, 255, 0);  //Subnet mask
 //IPAddress dns(10,11,39,5);  //DNS
